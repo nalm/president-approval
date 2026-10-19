@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: president-approval
+    runtime: static
+    buildCommand: node scripts/validate.js
+    staticPublishPath: .
+    headers:
+      - path: /data/*
+        name: Cache-Control
+        value: no-cache

@@ -1,0 +1,73 @@
+# 대통령 지지율 추이
+
+이재명 대통령 국정수행 긍정평가를 한국갤럽 · 전국지표조사(NBS) · 리얼미터 정례조사별로 보여 주는 정적 사이트입니다.
+라이브러리 없이 `index.html` · `style.css` · `app.js`(SVG 직접 렌더링)와 `data/polls.json` 하나로 동작합니다.
+
+## 파일 구성
+
+| 파일 | 역할 |
+|---|---|
+| `index.html` | 페이지 구조 |
+| `style.css` | 디자인(라이트/다크, 모바일 ≤760px · ≤400px) |
+| `app.js` | 데이터 로드, 최신값 스트립, SVG 차트, 툴팁, 읽는 법 문단 생성 |
+| `data/polls.json` | 유일한 데이터 원본 |
+| `scripts/validate.js` | 데이터 검증 (`node scripts/validate.js`, Render 빌드 단계에서도 실행) |
+| `render.yaml` | Render 정적 사이트 설정 (publish path `.`) |
+
+로컬 실행: `python3 -m http.server 8000` 후 http://localhost:8000
+
+## 데이터 출처
+
+| 기관 | 조사 주기 | 1차 출처 | 보조 출처 |
+|---|---|---|---|
+| 한국갤럽 | 매주 화~목 조사, 금요일 오전 공개 | 데일리 오피니언 (https://www.gallup.co.kr/gallupdb/report.asp) | 여심위 등록 결과표 |
+| 전국지표조사(NBS) | 격주 월~수 조사, 목요일 공개 (엠브레인퍼블릭·케이스탯리서치·코리아리서치·한국리서치 공동) | http://nbsurvey.kr/ | 여심위 등록 결과표 |
+| 리얼미터 | 매주 월~금 조사, 월요일 오전 공개 | 주간 동향 PDF (http://www.realmeter.net/category/pdf/) | 의뢰 언론사 보도 (2026년 10월 2주차까지 에너지경제신문, 이후 아시아경제) |
+
+- 여심위(중앙선거여론조사심의위원회) 등록 현황: https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467
+- 리얼미터의 **국정수행 평가** 조사는 여심위에 등록되지 않습니다(같은 주의 정당 지지도 조사만 등록됨). 그래서 리얼미터 값은 리얼미터 PDF(`primary`)나 의뢰 언론사 보도(`news`)로 확인하며, `note`에 같은 주 정당 조사의 등록번호를 참고로 적어 둡니다.
+
+### `polls.json` 스키마
+
+```json
+{
+  "updated": "YYYY-MM-DD",
+  "pollsters": [{ "id", "name", "color", "colorDark", "cadence", "sourceHome" }],
+  "polls": [{
+    "pollster": "gallup|nbs|realmeter",
+    "start": "YYYY-MM-DD", "end": "YYYY-MM-DD",
+    "approve": 39, "disapprove": 52,
+    "n": 1003, "method": "…", "moe": 3.1,
+    "sourceUrl": "https://…",
+    "sourceType": "primary|nesdc|news",
+    "nesdcId": "17313 또는 null",
+    "note": "…"
+  }]
+}
+```
+
+- `sourceType`: `primary` 조사기관 원자료(보고서·PDF), `nesdc` 여심위 등록 결과표, `news` 의뢰 언론사 보도(1차 출처 접근 불가 시에만).
+- 차트에서 점의 x 위치는 **조사 시작일**입니다. 기관별로 날짜순(오름차순) 정렬하고, 같은 기관 안에서 기간이 겹치면 안 됩니다.
+
+## 검증 원칙 (반드시 지킬 것)
+
+1. **수치를 지어내지 않습니다.** 모든 점은 1차 출처(조사기관 발표 또는 여심위 등록 결과표)에서 확인한 값만 넣습니다.
+2. 1차 출처에 접근할 수 없을 때만 의뢰 언론사 기사를 쓰고, `sourceType: "news"`로 표시합니다. 나중에 원자료를 확인하면 `primary`/`nesdc`로 바꿉니다.
+3. 확인할 수 없는 점은 **넣지 않습니다.** 간접 추정치, 보간, 다른 기사에서 옮겨 적은 값은 쓰지 않습니다. 비어 있는 기간은 선이 끊긴 채로 둡니다(갤럽·리얼미터 35일, NBS 48일 초과 간격).
+4. 조사기간, 표본 수(n), 조사 방식, 표본오차(95% 신뢰수준)를 함께 기록합니다.
+5. 수정 후에는 `node scripts/validate.js`를 실행해 통과해야 합니다.
+
+## 주간 업데이트 절차 (KST)
+
+| 요일 | 할 일 |
+|---|---|
+| 월 오전 (06시 이후) | 리얼미터 주간 결과: realmeter.net PDF 또는 아시아경제 기사에서 긍정/부정, n, 응답률, 표본오차 확인 |
+| 목 오후 (격주) | NBS: 여심위에서 등록 결과표 PDF('엠브레인퍼블릭' 등 4개사 공동)를 확인하고 nbsurvey.kr 발표와 대조 |
+| 금 오전 (10시 무렵) | 한국갤럽 데일리 오피니언: report.asp 최신 호 → 직무 긍정/부정, n, 응답률 (여심위 등록은 보통 전날~당일) |
+
+1. 새 조사를 `data/polls.json`의 해당 기관 배열 끝(날짜순)에 추가합니다.
+2. `updated`를 오늘 날짜로 바꿉니다.
+3. `node scripts/validate.js`를 실행합니다.
+4. 로컬에서 확인한 뒤 배포합니다.
+
+공휴일(설·추석·선거일 등) 주에는 조사가 쉬거나 기간이 짧아질 수 있습니다. 실제 조사 기간을 그대로 적으세요.
