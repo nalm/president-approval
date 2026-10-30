@@ -18,6 +18,8 @@ const ids = new Set();
 for (const p of d.pollsters || []) {
   for (const k of ['id', 'name', 'color', 'colorDark', 'cadence', 'sourceHome']) if (!p[k]) err(`pollster ${p.id}: ${k} 누락`);
   if (!hex(p.color) || !hex(p.colorDark)) err(`pollster ${p.id}: 색상 형식 오류`);
+  if (p.line != null && !['solid', 'dashed'].includes(p.line)) err(`pollster ${p.id}: line 은 solid|dashed`);
+  if (p.short != null && (typeof p.short !== 'string' || !p.short.trim())) err(`pollster ${p.id}: short 형식 오류`);
   if (ids.has(p.id)) err(`pollster id 중복: ${p.id}`);
   ids.add(p.id);
 }

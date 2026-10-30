@@ -29,6 +29,9 @@
   const color = (p) => (dark.matches ? p.colorDark : p.color);
   const series = (pid) => state.data.polls.filter((p) => p.pollster === pid).sort((a, b) => a.start.localeCompare(b.start));
   const pollsterById = (id) => state.data.pollsters.find((p) => p.id === id);
+  // short label for running text / chart end labels; optional `short` overrides the name minus its parenthetical
+  const short = (ps) => ps.short || ps.name.replace(/\(.*\)/, '').trim();
+  const dashed = (ps) => ps.line === 'dashed';
 
   function el(tag, attrs = {}, parent) {
     const n = document.createElementNS(NS, tag);
@@ -72,7 +75,7 @@
       b.type = 'button';
       b.className = 'pill' + (state.hidden.has(ps.id) ? ' off' : '');
       b.setAttribute('aria-pressed', String(!state.hidden.has(ps.id)));
-      b.innerHTML = `<span class="sw" style="color:${color(ps)}"></span>${esc(ps.name)}`;
+      b.innerHTML = `<span class="sw${dashed(ps) ? ' dashed' : ''}" style="color:${color(ps)}"></span>${esc(ps.name)}`;
       b.addEventListener('click', () => {
         if (state.hidden.has(ps.id)) state.hidden.delete(ps.id);
         else if (state.data.pollsters.length - state.hidden.size > 1) state.hidden.add(ps.id);
@@ -142,7 +145,9 @@
         const cmd = i === 0 || parse(p.start) - parse(s[i - 1].start) > gap ? 'M' : 'L';
         d += `${cmd}${X(parse(p.start)).toFixed(1)},${Y(p.approve).toFixed(1)}`;
       });
-      el('path', { d, fill: 'none', stroke: col, 'stroke-width': 3.3 * px, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+      const line = { d, fill: 'none', stroke: col, 'stroke-width': 3.3 * px, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+      if (dashed(ps)) line['stroke-dasharray'] = `${1.5 * px} ${6.5 * px}`; // round caps turn short dashes into a dotted-dash line
+      el('path', line, svg);
       const last = s[s.length - 1];
       ends.push({ ps, x: X(parse(last.start)), y: Y(last.approve), v: last.approve, col });
     }
@@ -152,8 +157,10 @@
     for (const ps of visible) {
       for (const p of pts[ps.id]) {
         const c = el('circle', {
-          class: 'dot', cx: X(parse(p.start)), cy: Y(p.approve), r: 5.6 * dpx, fill: color(ps),
-          stroke: C('--surface'), 'stroke-width': 2.5 * dpx, tabindex: 0, role: 'button',
+          class: 'dot', cx: X(parse(p.start)), cy: Y(p.approve), r: (dashed(ps) ? 4.6 : 5.6) * dpx,
+          // dashed-line series get hollow dots so the paired series stay distinguishable where they overlap
+          fill: dashed(ps) ? C('--surface') : color(ps), stroke: dashed(ps) ? color(ps) : C('--surface'),
+          'stroke-width': (dashed(ps) ? 2.4 : 2.5) * dpx, tabindex: 0, role: 'button',
           'aria-label': `${ps.name} ${period(p.start, p.end)} ${fmt(p.approve, ps.id)}%`
         }, dg);
         c.addEventListener('mouseenter', () => { if (!state.pinned) showTip(p, c); });
@@ -174,7 +181,7 @@
       if (over > 0) for (let i = 0; i < ly.length; i++) ly[i] -= over;
       ends.forEach((e, i) => {
         const t = el('text', { x: e.x + 12 * px, y: ly[i], 'dominant-baseline': 'middle', fill: e.col, 'font-size': 12 * px, 'font-weight': 800 }, svg);
-        t.textContent = `${e.ps.name.replace(/\(.*\)/, '').trim()} ${fmt(e.v, e.ps.id)}`;
+        t.textContent = `${short(e.ps)} ${fmt(e.v, e.ps.id)}`;
       });
     }
   }
@@ -213,19 +220,20 @@
       return { ps, last: s[s.length - 1], first: s[0], peak: s.reduce((a, b) => (b.approve > a.approve ? b : a)), n: s.length };
     });
     const latest = L.map((o) => `${o.ps.name} ${fmt(o.last.approve, o.ps.id)}%(${period(o.last.start, o.last.end).replace(/^\d{4}\./, '')})`).join(', ');
-    const peaks = L.map((o) => `${o.ps.name.replace(/\(.*\)/, '').trim()} ${fmt(o.peak.approve, o.ps.id)}%(${fmtDate(o.peak.start)})`).join(', ');
+    const peaks = L.map((o) => `${short(o.ps)} ${fmt(o.peak.approve, o.ps.id)}%(${fmtDate(o.peak.start)})`).join(', ');
     const lo = L.reduce((a, b) => (b.last.approve < a.last.approve ? b : a)), hi = L.reduce((a, b) => (b.last.approve > a.last.approve ? b : a));
     $('#howto').textContent =
       `각 점은 조사 시작일 위치에 찍은 해당 조사의 긍정평가(‘잘하고 있다’) 비율입니다. ` +
       `가장 최근 조사는 ${latest}이며, 기관 간 차이는 ${(hi.last.approve - lo.last.approve).toFixed(1).replace(/\.0$/, '')}%p입니다. ` +
       `기록된 기간 중 최고치는 ${peaks}였습니다. ` +
       `리얼미터는 무선 ARS 자동응답, 한국갤럽·NBS는 전화면접 방식이라 같은 시기에도 수준이 다를 수 있으므로 기관 간 절대값보다 각 선의 방향을 비교해 읽는 것이 좋습니다. ` +
-      `총 ${L.reduce((a, o) => a + o.n, 0)}개 조사(${L.map((o) => `${o.ps.name.replace(/\(.*\)/, '').trim()} ${o.n}`).join(' · ')})를 표시합니다.`;
+      `여론조사꽃은 같은 이틀 동안 전화면접(실선)과 ARS(점선)를 따로 실시해 두 결과를 함께 발표하므로, 두 선의 간격은 조사 방식에 따른 차이를 보여 줍니다(두 값을 평균하지 않습니다). ` +
+      `총 ${L.reduce((a, o) => a + o.n, 0)}개 조사(${L.map((o) => `${short(o.ps)} ${o.n}`).join(' · ')})를 표시합니다.`;
     const ul = $('#sources');
     ul.innerHTML = '';
     for (const o of L) {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="${esc(o.last.sourceUrl)}" target="_blank" rel="noopener">${esc(o.ps.name.replace(/\(.*\)/, '').trim())} 최신 결과 ↗</a>
+      li.innerHTML = `<a href="${esc(o.last.sourceUrl)}" target="_blank" rel="noopener">${esc(short(o.ps))} 최신 결과 ↗</a>
         <small>${period(o.last.start, o.last.end)} · ${srcLabel[o.last.sourceType]}${o.last.nesdcId ? ` · 여심위 등록 ${esc(o.last.nesdcId)}` : ''} · <a href="${esc(o.ps.sourceHome)}" target="_blank" rel="noopener">발표 목록</a></small>`;
       ul.appendChild(li);
     }
