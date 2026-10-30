@@ -1302,10 +1302,10 @@
    "n": 1000,
    "method": "전화면접(무선전화 가상번호 100%)",
    "moe": 3.1,
-   "sourceUrl": "https://www.yna.co.kr/view/AKR20261029094700001",
-   "sourceType": "news",
+   "sourceUrl": "https://www.nesdc.go.kr/portal/bbs/B0000005/view.do?nttId=19591&menuNo=200467",
+   "sourceType": "nesdc",
    "nesdcId": "17333",
-   "note": "연합뉴스 보도 기준(NBS 191차, 케이스탯리서치·엠브레인퍼블릭 주관). 응답률 14.7%. 여심위 등록(17333) 결과표는 10/30 11시 이후 공개 예정, nbsurvey.kr 접속 차단으로 원자료 미확인."
+   "note": "NBS 191차(엠브레인퍼블릭·케이스탯리서치·코리아리서치·한국리서치 공동). 응답률 14.7%. 여심위 등록 결과표(통계표 191차) 기준 — 국정운영 평가 긍정(매우+잘하는 편)/부정(잘못하는 편+매우). NESDC 등록번호 17333"
   },
   {
    "pollster": "realmeter",
