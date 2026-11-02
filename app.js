@@ -32,6 +32,35 @@
   // short label for running text / chart end labels; optional `short` overrides the name minus its parenthetical
   const short = (ps) => ps.short || ps.name.replace(/\(.*\)/, '').trim();
   const dashed = (ps) => ps.line === 'dashed';
+  // release date (발표일) is optional: unverified points omit it and the UI simply leaves the label out
+  const relText = (p) => (p.released ? `${fmtDate(p.released)} 발표` : '');
+  const surveyText = (p) => `${period(p.start, p.end)} 조사`;
+  // latest point per pollster, newest release first; missing release falls back to the survey end date,
+  // ties broken by survey end date, then by the fixed pollster order in polls.json
+  function latestByRelease() {
+    const order = new Map(state.data.pollsters.map((ps, i) => [ps.id, i]));
+    return state.data.pollsters
+      .map((ps) => { const s = series(ps.id); return s.length ? { ps, last: s[s.length - 1], prev: s[s.length - 2] } : null; })
+      .filter(Boolean)
+      .sort((a, b) =>
+        (b.last.released || b.last.end).localeCompare(a.last.released || a.last.end) ||
+        b.last.end.localeCompare(a.last.end) ||
+        order.get(a.ps.id) - order.get(b.ps.id));
+  }
+  // subtitle built from the pollster list so it never drifts from the cards; variants of one pollster are grouped
+  function renderSubtitle() {
+    const groups = [];
+    for (const ps of state.data.pollsters) {
+      const m = ps.name.match(/^(.*?)\s*\((.*)\)\s*$/);
+      const base = m ? m[1] : ps.name;
+      const g = groups.find((x) => x.base === base);
+      if (g) g.items.push({ ps, variant: m && m[2] });
+      else groups.push({ base, items: [{ ps, variant: m && m[2] }] });
+    }
+    const label = groups.map((g) => (g.items.length > 1 && g.items.every((i) => i.variant)
+      ? `${g.base}(${g.items.map((i) => i.variant).join('·')})` : g.items.map((i) => i.ps.name).join(' · ')));
+    $('#sub').textContent = `${label.join(' · ')} 정례조사 추이`;
+  }
 
   function el(tag, attrs = {}, parent) {
     const n = document.createElementNS(NS, tag);
@@ -44,10 +73,7 @@
   function renderLatest() {
     const box = $('#latest');
     box.innerHTML = '';
-    for (const ps of state.data.pollsters) {
-      const s = series(ps.id);
-      if (!s.length) continue;
-      const last = s[s.length - 1], prev = s[s.length - 2];
+    for (const { ps, last, prev } of latestByRelease()) {
       const dp = decimals(ps.id);
       let chg = '', cls = '';
       if (prev) {
@@ -60,7 +86,8 @@
       a.innerHTML = `
         <div class="l-name"><i style="color:${color(ps)}">●</i>${esc(ps.name)}</div>
         <div class="l-main"><span class="l-num">${fmt(last.approve, ps.id)}%</span><span class="l-chg ${cls}">${chg}</span></div>
-        <div class="l-when">${period(last.start, last.end)}${prev ? ' · 직전 조사 대비' : ''}</div>
+        ${last.released ? `<div class="l-rel">${relText(last)}</div>` : ''}
+        <div class="l-when">${surveyText(last)}${prev ? ' · 직전 조사 대비' : ''}</div>
         <div class="l-meta">n=${last.n.toLocaleString('ko-KR')} · ${esc(last.method)} · 95% 신뢰수준 ±${last.moe.toFixed(1)}%p · <a href="${esc(last.sourceUrl)}" target="_blank" rel="noopener">출처 ↗</a></div>`;
       box.appendChild(a);
     }
@@ -161,7 +188,7 @@
           // dashed-line series get hollow dots so the paired series stay distinguishable where they overlap
           fill: dashed(ps) ? C('--surface') : color(ps), stroke: dashed(ps) ? color(ps) : C('--surface'),
           'stroke-width': (dashed(ps) ? 2.4 : 2.5) * dpx, tabindex: 0, role: 'button',
-          'aria-label': `${ps.name} ${period(p.start, p.end)} ${fmt(p.approve, ps.id)}%`
+          'aria-label': `${ps.name} ${surveyText(p)}${p.released ? ` ${relText(p)}` : ''} ${fmt(p.approve, ps.id)}%`
         }, dg);
         c.addEventListener('mouseenter', () => { if (!state.pinned) showTip(p, c); });
         c.addEventListener('mouseleave', () => { if (!state.pinned) hideTip(); });
@@ -191,7 +218,7 @@
     const tip = $('#tip'), ps = pollsterById(p.pollster);
     tip.innerHTML = `<b style="color:${color(ps)}">${esc(ps.name)}</b>
       <span class="v">${fmt(p.approve, ps.id)}%</span>
-      <div class="p">${period(p.start, p.end)}${p.disapprove != null ? ` · 부정 ${fmt(p.disapprove, ps.id)}%` : ''}</div>
+      <div class="p">${surveyText(p)}${p.released ? ` · ${relText(p)}` : ''}${p.disapprove != null ? ` · 부정 ${fmt(p.disapprove, ps.id)}%` : ''}</div>
       <div class="m">n=${p.n.toLocaleString('ko-KR')} · ${esc(p.method)} · ±${p.moe.toFixed(1)}%p<br>
       <a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener">${srcLabel[p.sourceType] || '출처'} ↗</a></div>`;
     tip.hidden = false;
@@ -231,10 +258,11 @@
       `총 ${L.reduce((a, o) => a + o.n, 0)}개 조사(${L.map((o) => `${short(o.ps)} ${o.n}`).join(' · ')})를 표시합니다.`;
     const ul = $('#sources');
     ul.innerHTML = '';
-    for (const o of L) {
+    for (const { ps, last } of latestByRelease()) {
+      const o = { ps, last };
       const li = document.createElement('li');
       li.innerHTML = `<a href="${esc(o.last.sourceUrl)}" target="_blank" rel="noopener">${esc(short(o.ps))} 최신 결과 ↗</a>
-        <small>${period(o.last.start, o.last.end)} · ${srcLabel[o.last.sourceType]}${o.last.nesdcId ? ` · 여심위 등록 ${esc(o.last.nesdcId)}` : ''} · <a href="${esc(o.ps.sourceHome)}" target="_blank" rel="noopener">발표 목록</a></small>`;
+        <small>${surveyText(o.last)}${o.last.released ? ` · ${relText(o.last)}` : ''} · ${srcLabel[o.last.sourceType]}${o.last.nesdcId ? ` · 여심위 등록 ${esc(o.last.nesdcId)}` : ''} · <a href="${esc(o.ps.sourceHome)}" target="_blank" rel="noopener">발표 목록</a></small>`;
       ul.appendChild(li);
     }
   }
@@ -264,6 +292,7 @@
     .then((d) => {
       state.data = d;
       $('#stamp-date').textContent = fmtDate(d.updated);
+      renderSubtitle();
       renderAll();
       renderNotes();
     })

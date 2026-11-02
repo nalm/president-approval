@@ -5,6 +5,6 @@ services:
     buildCommand: node scripts/validate.js
     staticPublishPath: .
     headers:
-      - path: /data/*
+      - path: /*
         name: Cache-Control
         value: no-cache

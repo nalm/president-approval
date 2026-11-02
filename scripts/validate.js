@@ -3,7 +3,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const file = process.argv[2] || path.join(__dirname, '..', 'data', 'polls.json');
+const file = process.argv.slice(2).find((a) => !a.startsWith('--')) || path.join(__dirname, '..', 'data', 'polls.json');
 const errors = [], warns = [];
 const err = (m) => errors.push(m), warn = (m) => warns.push(m);
 const isoOk = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s + 'T00:00:00Z')) && new Date(s + 'T00:00:00Z').toISOString().slice(0, 10) === s;
@@ -24,11 +24,12 @@ for (const p of d.pollsters || []) {
   ids.add(p.id);
 }
 const KEYS = ['pollster', 'start', 'end', 'approve', 'disapprove', 'n', 'method', 'moe', 'sourceUrl', 'sourceType', 'nesdcId', 'note'];
-const seen = new Set(), last = {};
+const OPTIONAL = ['released'];
+const seen = new Set(), last = {}, lastRel = {};
 (d.polls || []).forEach((p, i) => {
   const tag = `#${i} ${p.pollster} ${p.start}`;
   for (const k of KEYS) if (!(k in p)) err(`${tag}: 필드 ${k} 누락`);
-  for (const k of Object.keys(p)) if (!KEYS.includes(k)) warn(`${tag}: 알 수 없는 필드 ${k}`);
+  for (const k of Object.keys(p)) if (!KEYS.includes(k) && !OPTIONAL.includes(k)) warn(`${tag}: 알 수 없는 필드 ${k}`);
   if (!ids.has(p.pollster)) err(`${tag}: 등록되지 않은 pollster`);
   if (!isoOk(p.start) || !isoOk(p.end)) err(`${tag}: 날짜 형식 오류`);
   else {
@@ -36,6 +37,18 @@ const seen = new Set(), last = {};
     const days = (Date.parse(p.end) - Date.parse(p.start)) / 864e5;
     if (days > 6) err(`${tag}: 조사기간 ${days + 1}일 (정례조사로 보기 어려움)`);
     if (d.updated && p.end > d.updated) err(`${tag}: 조사 종료일이 updated(${d.updated}) 이후`);
+  }
+  // released (발표일, 선택): 확인된 최초 공표·보도일만. 없으면 화면에서 라벨을 생략하고 조사 종료일로 정렬
+  if ('released' in p) {
+    if (!isoOk(p.released)) err(`${tag}: released 가 YYYY-MM-DD 형식이 아님 (${p.released})`);
+    else {
+      if (isoOk(p.end) && p.released < p.end) err(`${tag}: released(${p.released}) < end(${p.end})`);
+      if (d.updated && p.released > d.updated) err(`${tag}: released(${p.released})가 updated(${d.updated}) 이후`);
+      if (isoOk(p.end) && (Date.parse(p.released) - Date.parse(p.end)) / 864e5 > 14) warn(`${tag}: 조사 종료 후 14일 넘어 발표(${p.released}) — 확인 권장`);
+      const pr = lastRel[p.pollster];
+      if (pr && p.released < pr.released) err(`${tag}: released(${p.released})가 이전 조사(${pr.start}) 발표일(${pr.released})보다 빠름`);
+      lastRel[p.pollster] = p;
+    }
   }
   if (typeof p.approve !== 'number' || p.approve < 0 || p.approve > 100) err(`${tag}: approve 범위 오류`);
   if (p.disapprove != null && (typeof p.disapprove !== 'number' || p.disapprove < 0 || p.disapprove > 100)) err(`${tag}: disapprove 범위 오류`);
@@ -59,9 +72,9 @@ const seen = new Set(), last = {};
   last[p.pollster] = p;
 });
 const cnt = {};
-for (const p of d.polls || []) { cnt[p.pollster] ??= { total: 0 }; cnt[p.pollster].total++; cnt[p.pollster][p.sourceType] = (cnt[p.pollster][p.sourceType] || 0) + 1; }
+for (const p of d.polls || []) { cnt[p.pollster] ??= { total: 0, released: 0 }; cnt[p.pollster].total++; if (p.released) cnt[p.pollster].released++; cnt[p.pollster][p.sourceType] = (cnt[p.pollster][p.sourceType] || 0) + 1; }
 console.log(`파일: ${file}\nupdated: ${d.updated}`);
-for (const [k, v] of Object.entries(cnt)) console.log(`  ${k}: ${JSON.stringify(v)} · 최신 ${last[k].start}~${last[k].end} ${last[k].approve}%`);
+for (const [k, v] of Object.entries(cnt)) console.log(`  ${k}: ${JSON.stringify(v)} · 최신 ${last[k].start}~${last[k].end} ${last[k].approve}%${last[k].released ? ` (${last[k].released} 발표)` : ' (발표일 없음)'}`);
 if (process.argv.includes('--verbose')) warns.forEach((w) => console.log('경고:', w));
 else if (warns.length) console.log(`경고 ${warns.length}건 (--verbose 로 표시)`);
 if (errors.length) { errors.forEach((e) => console.error('오류:', e)); console.error(`실패: 오류 ${errors.length}건`); process.exit(1); }

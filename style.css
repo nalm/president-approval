@@ -33,6 +33,7 @@ h1{font-family:Georgia,"Noto Serif KR",serif;font-size:clamp(2rem,5vw,4rem);lett
 .l-num{font-family:Georgia,"Noto Serif KR",serif;font-size:clamp(2rem,4vw,3.1rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
 .l-chg{font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums;color:var(--quiet)}
 .l-chg.up{color:var(--positive)}.l-chg.down{color:var(--negative)}
+.l-rel{color:var(--ink);font-size:.86rem;font-weight:700;font-variant-numeric:tabular-nums}
 .l-when{color:var(--muted);font-size:.84rem}
 .l-meta{color:var(--quiet);font-size:.76rem;margin-top:6px;line-height:1.45}
 .l-meta a{color:var(--muted)}
@@ -83,9 +84,10 @@ h2{font-size:1rem;margin:0 0 8px}
   .latest article{border-left:0;border-top:1px solid var(--rule);padding:14px 0;display:grid;grid-template-columns:1fr auto;column-gap:12px;align-items:center}
   .latest article:first-child{border-top:0}
   .l-name{grid-column:1;grid-row:1}
-  .l-when{grid-column:1;grid-row:2}
-  .l-meta{grid-column:1/-1;grid-row:3}
-  .l-main{grid-column:2;grid-row:1/3;flex-direction:column;align-items:flex-end;gap:0;margin:0}
+  .l-rel{grid-column:1;grid-row:2}
+  .l-when{grid-column:1;grid-row:3}
+  .l-meta{grid-column:1/-1;grid-row:4}
+  .l-main{grid-column:2;grid-row:1/4;flex-direction:column;align-items:flex-end;gap:0;margin:0}
   .card{padding:14px 12px 6px}
   .legend{width:100%}
   .legend .pill{flex:1 1 auto;justify-content:center;padding:0 10px;white-space:nowrap}
