@@ -3387,10 +3387,10 @@
    "n": 1005,
    "method": "무선 ARS(자동응답), 무선 RDD 100%",
    "moe": 3.1,
-   "sourceUrl": "https://www.topstarnews.net/news/articleView.html?idxno=16266020",
-   "sourceType": "news",
+   "sourceUrl": "https://www.nesdc.go.kr/portal/bbs/B0000005/view.do?nttId=19596&menuNo=200467",
+   "sourceType": "nesdc",
    "nesdcId": "17338",
-   "note": "여론조사꽃 자체 정례조사 제175차 ARS(보도상 제199차 정례조사). 응답률 1.8%. 여심위 등록 결과표는 2026-11-03 06시 이후 공개 예정이라 톱스타뉴스 보도(2026-11-02)로 우선 반영. 공표 2026-11-02 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
+   "note": "여론조사꽃 자체 정례조사 제175차 ARS. 응답률 1.8%. 여심위 결과표 — 대통령 국정운영 평가 '잘하고 있다'(매우+잘하는 편)/'잘 못하고 있다'(잘 못하는 편+매우). 공표 2026-11-02 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
   },
   {
    "pollster": "flower_cati",
@@ -4362,10 +4362,10 @@
    "n": 1004,
    "method": "전화면접(CATI), 무선 가상번호(통신3사) 무작위 추출",
    "moe": 3.1,
-   "sourceUrl": "https://www.topstarnews.net/news/articleView.html?idxno=16266020",
-   "sourceType": "news",
+   "sourceUrl": "https://www.nesdc.go.kr/portal/bbs/B0000005/view.do?nttId=19595&menuNo=200467",
+   "sourceType": "nesdc",
    "nesdcId": "17337",
-   "note": "여론조사꽃 자체 정례조사 제182차 전화면접(보도상 제199차 정례조사). 응답률 9.1%. 여심위 등록 결과표는 2026-11-03 06시 이후 공개 예정이라 톱스타뉴스 보도(2026-11-02)로 우선 반영. 공표 2026-11-02 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
+   "note": "여론조사꽃 자체 정례조사 제182차 전화면접. 응답률 9.1%. 여심위 결과표 — 대통령 국정운영 평가 '잘하고 있다'(매우+잘하는 편)/'잘 못하고 있다'(잘 못하는 편+매우). 공표 2026-11-02 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
   }
  ]
 }
