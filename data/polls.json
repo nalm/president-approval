@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06",
+ "updated": "2026-11-09",
  "pollsters": [
   {
    "id": "gallup",
@@ -2431,6 +2431,21 @@
    "sourceType": "news",
    "nesdcId": null,
    "note": "아시아경제 의뢰. 아시아경제(의뢰처) 보도. 응답률 3.0%. 리얼미터 PDF 미확인. 같은 주 정당지지도 조사 NESDC 등록번호 17336 (국정수행 평가 조사는 별도 표본, 미등록)"
+  },
+  {
+   "pollster": "realmeter",
+   "start": "2026-11-02",
+   "end": "2026-11-06",
+   "released": "2026-11-09",
+   "approve": 35.9,
+   "disapprove": 60.6,
+   "n": 2528,
+   "method": "무선 ARS(RDD)",
+   "moe": 1.9,
+   "sourceUrl": "https://www.asiae.co.kr/article/2026110722202939868",
+   "sourceType": "news",
+   "nesdcId": null,
+   "note": "아시아경제 의뢰. 아시아경제(의뢰처) 보도(2026-11-09 06시). 응답률 3.0%. 리얼미터 PDF 미확인. 같은 주 정당지지도 조사 NESDC 등록번호 17345 (국정수행 평가 조사는 별도 표본, 미등록)"
   },
   {
    "pollster": "flower_ars",
