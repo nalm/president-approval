@@ -2486,7 +2486,7 @@
    "disapprove": 60.9,
    "n": 2512,
    "method": "무선 ARS(RDD)",
-   "moe": 2.0,
+   "moe": 2,
    "sourceUrl": "https://www.asiae.co.kr/article/2026111509162718763",
    "sourceType": "news",
    "nesdcId": null,
@@ -4450,12 +4450,27 @@
    "approve": 44.1,
    "disapprove": 55.3,
    "n": 1002,
-   "method": "전화면접(CATI), 무선 가상번호 활용",
+   "method": "전화면접(CATI), 무선전화면접 100%, 통신3사 가상번호 3만 개 무작위 추출",
    "moe": 3.1,
-   "sourceUrl": "https://www.businesspost.co.kr/BP?command=article_view&num=451494",
-   "sourceType": "news",
-   "nesdcId": null,
-   "note": "여론조사꽃 자체 정례조사 전화면접. 비즈니스포스트 보도 기준(여심위 결과표 공개 전). 대통령 국정운영 평가 잘하고 있다 44.1%(매우 15.2+잘하는 편 28.9)/잘 못하고 있다 55.3%, 모름 0.7%. 공표 2026-11-09 06시 뉴스공장. 이 주 ARS 결과는 보도에서 확인되지 않아 넣지 않음."
+   "sourceUrl": "https://www.nesdc.go.kr/portal/bbs/B0000005/view.do?nttId=19605&menuNo=200467",
+   "sourceType": "nesdc",
+   "nesdcId": "17346",
+   "note": "여론조사꽃 자체 정례조사 제183차 전화면접. 응답률 10.0%. 여심위 결과표(2026-11-07 작성) — 대통령 국정운영 평가 '잘하고 있다'(매우 15.2+잘하는 편 28.9)/'잘 못하고 있다' 55.3%, 모름 0.7%. 공표 2026-11-09 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
+  },
+  {
+   "pollster": "flower_ars",
+   "start": "2026-11-06",
+   "end": "2026-11-07",
+   "released": "2026-11-09",
+   "approve": 43.4,
+   "disapprove": 55.5,
+   "n": 1008,
+   "method": "무선 ARS(자동응답), 무선 RDD 100%",
+   "moe": 3.1,
+   "sourceUrl": "https://www.nesdc.go.kr/portal/bbs/B0000005/view.do?nttId=19606&menuNo=200467",
+   "sourceType": "nesdc",
+   "nesdcId": "17347",
+   "note": "여론조사꽃 자체 정례조사 제176차 ARS. 응답률 1.7%. 여심위 결과표(2026-11-07 작성) — 대통령 국정운영 평가 '잘하고 있다'(매우 27.7+잘하는 편 15.7)/'잘 못하고 있다' 55.5%, 모름 1.1%. 공표 2026-11-09 06시 유튜브 '김어준의 겸손은 힘들다 뉴스공장'"
   }
  ]
 }
