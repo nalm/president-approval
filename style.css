@@ -98,3 +98,7 @@ h2{font-size:1rem;margin:0 0 8px}
   .ranges{width:100%;display:grid;grid-template-columns:1fr}
   .ranges .pill{width:100%;justify-content:center}
 }
+@media (min-width:761px){
+  .br-m{display:none}
+  h1{white-space:nowrap;font-size:clamp(2rem,3.9vw,3.6rem)}
+}
