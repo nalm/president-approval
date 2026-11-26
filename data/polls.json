@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-23",
+  "updated": "2026-11-26",
   "pollsters": [
     {
       "id": "gallup",
@@ -1456,6 +1456,21 @@
       "sourceType": "primary",
       "nesdcId": "17352",
       "note": "NBS 192차(엠브레인퍼블릭·케이스탯리서치·코리아리서치·한국리서치 공동). 응답률 14.3%. NBS 공식 결과 페이지(제192호) 기준 — 국정운영 평가 긍정(잘하고 있다: 매우+잘함)/부정(잘못하고 있다: 매우+못함). NESDC 등록번호 17352"
+    },
+    {
+      "pollster": "nbs",
+      "start": "2026-11-23",
+      "end": "2026-11-25",
+      "released": "2026-11-26",
+      "approve": 43,
+      "disapprove": 45,
+      "n": 1000,
+      "method": "전화면접(무선전화 가상번호 100%)",
+      "moe": 3.1,
+      "sourceUrl": "http://nbsurvey.kr/archives/9509",
+      "sourceType": "primary",
+      "nesdcId": "17379",
+      "note": "NBS 193차(엠브레인퍼블릭·케이스탯리서치·코리아리서치·한국리서치 공동). 응답률 20.3%. NBS 공식 결과 페이지(제193호) 기준 — 국정운영 평가 긍정(잘하고 있다: 매우+잘함)/부정(잘못하고 있다: 매우+못함). NESDC 등록번호 17379"
     },
     {
       "pollster": "realmeter",
